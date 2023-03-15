@@ -1,23 +1,28 @@
-import re
+import spacy
 
 # Assumption: the file is a plain text file with one tweet per line
 tweets_file = "tweets.txt"
-racial_slurs = {"asshole","freak","bastard","niggar","paki","moron"}
- # Assumption: a set of racial slurs is provided
+racial_slurs = {"asshole","freak","bastard","niggar","paki","moron"} # Assumption: a set of racial slurs is provided
 
-# Function to calculate the degree of profanity for a given sentence
+# Load the spacy NLP model
+nlp = spacy.load("en_core_web_sm")
+
+# Define a function to calculate the degree of profanity for a given sentence using NLP
 def calculate_profanity(sentence):
-    # Split the sentence into words
-    words = re.findall(r'\w+', sentence)
+    # Parse the sentence using the spacy NLP model
+    doc = nlp(sentence)
     # Count the number of racial slurs in the sentence
-    num_slurs = len(set(words) & racial_slurs)
+    num_slurs = sum([1 for token in doc if token.text.lower() in racial_slurs])
     # Calculate the degree of profanity as a percentage of total words
-    profanity_degree = num_slurs / len(words) * 100 if len(words) > 0 else 0
+    profanity_degree = num_slurs / len(doc) * 100 if len(doc) > 0 else 0
     return profanity_degree
 
 # Read in the tweets file and calculate the degree of profanity for each sentence
 with open(tweets_file, "r") as f:
     tweets = f.readlines()
     for tweet in tweets:
-        profanity_degree = calculate_profanity(tweet)
+        profanity_degree = calculate_profanity(tweet.strip())
         print(f"Sentence: {tweet.strip()}, Profanity Degree: {profanity_degree:.2f}%")
+
+#In this version of the program, we load the Spacy NLP model to parse each tweet into individual tokens (words) and then count the number of racial slurs among those
+#tokens. The calculate_profanity() function takes in a sentence as a string and returns the degree of profanity as a percentage of total tokens in the sentence.
